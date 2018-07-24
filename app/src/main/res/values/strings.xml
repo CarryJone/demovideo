@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">DemoVideo</string>
+    <string name="title_activity_filelist">FilelistActivity</string>
+</resources>
