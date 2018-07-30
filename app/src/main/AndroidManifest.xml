@@ -4,9 +4,9 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.CAMERA"></uses-permission>
-    <uses-permission android:name="android.permission.RECORD_AUDIO"></uses-permission>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <!-- GCM推播 -->
@@ -20,7 +20,7 @@
 
     <permission
         android:name="com.example.mds_user.demovideo.permission.C2D_MESSAGE"
-        android:protectionLevel="signature"></permission>
+        android:protectionLevel="signature" />
 
     <uses-permission android:name="android.permission.GET_ACCOUNTS" /> <!-- GCM requires a Google account. -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -113,10 +113,30 @@
         <activity
             android:name=".filelist.FilelistActivity"
             android:label="@string/title_activity_filelist"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".filelist.TrimmerActivity"
             android:label="@string/title_activity_filelist"
+            android:theme="@style/AppTheme.NoActionBar" />
+
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="com.example.mds_user.demovideo.fileProvider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+        <provider
+            android:name=".MyProvider"
+            android:authorities="com.example.mds_user.demovideo"
+            android:exported="true" />
+
+        <activity
+            android:name=".voice.VoiceActivity"
+            android:label="@string/title_activity_voice"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 

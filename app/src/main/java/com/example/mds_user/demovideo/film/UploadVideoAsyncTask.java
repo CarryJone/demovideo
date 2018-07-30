@@ -51,7 +51,9 @@ public class UploadVideoAsyncTask extends AsyncTask<String, Void, String> {
 //
 //        result = HttpUtil.doPost("http://cloud.mds.com.tw/Demo/SysFun/WebService/Demo_UploadVideo.ashx", litParams);
         try {
-            result = HttpUtil.post("http://cloud.mds.com.tw/Demo/SysFun/WebService/Demo_UploadVideo.ashx", FileUtils.path+"/"+FileUtils.name+".mp4");
+//            result = HttpUtil.post("http://cloud.mds.com.tw/Demo/SysFun/WebService/Demo_UploadVideo.ashx", params[0]);
+            result = HttpUtil.post2("http://wcsap3.mds.com.tw:7001/mliweb/uploadTest.do", params[0]);
+
         } catch (IOException e) {
             e.printStackTrace();
         }

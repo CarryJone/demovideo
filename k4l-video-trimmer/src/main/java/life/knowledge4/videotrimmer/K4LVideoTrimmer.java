@@ -99,6 +99,7 @@ public class K4LVideoTrimmer extends FrameLayout {
     private long mOriginSizeFile;
     private boolean mResetSeekBar = true;
     private final MessageHandler mMessageHandler = new MessageHandler(this);
+    private boolean isVoice = false;
 
     public K4LVideoTrimmer(@NonNull Context context, AttributeSet attrs) {
         this(context, attrs, 0);
@@ -123,6 +124,8 @@ public class K4LVideoTrimmer extends FrameLayout {
         mTextTimeFrame = ((TextView) findViewById(R.id.textTimeSelection));
         mTextTime = ((TextView) findViewById(R.id.textTime));
         mTimeLineView = ((TimeLineView) findViewById(R.id.timeLineView));
+        if (!isVoice) {
+        }
 
         setUpListeners();
         setUpMargins();
@@ -371,31 +374,29 @@ public class K4LVideoTrimmer extends FrameLayout {
     private void onVideoPrepared(@NonNull MediaPlayer mp) {
         // Adjust the size of the video
         // so it fits on the screen
-        int videoWidth = mp.getVideoWidth();
-        int videoHeight = mp.getVideoHeight();
-        float videoProportion = (float) videoWidth / (float) videoHeight;
-        int screenWidth = mLinearVideo.getWidth();
-        int screenHeight = mLinearVideo.getHeight();
-        float screenProportion = (float) screenWidth / (float) screenHeight;
-        ViewGroup.LayoutParams lp = mVideoView.getLayoutParams();
-
-        if (videoProportion > screenProportion) {
-            lp.width = screenWidth;
-            lp.height = (int) ((float) screenWidth / videoProportion);
-        } else {
-            lp.width = (int) (videoProportion * (float) screenHeight);
-            lp.height = screenHeight;
-        }
-        mVideoView.setLayoutParams(lp);
+//        int videoWidth = mp.getVideoWidth();
+//        int videoHeight = mp.getVideoHeight();
+//        float videoProportion = (float) videoWidth / (float) videoHeight;
+//        int screenWidth = mLinearVideo.getWidth();
+//        int screenHeight = mLinearVideo.getHeight();
+//        float screenProportion = (float) screenWidth / (float) screenHeight;
+//        ViewGroup.LayoutParams lp = mVideoView.getLayoutParams();
+//
+//        if (videoProportion > screenProportion) {
+//            lp.width = screenWidth;
+//            lp.height = (int) ((float) screenWidth / videoProportion);
+//        } else {
+//            lp.width = (int) (videoProportion * (float) screenHeight);
+//            lp.height = screenHeight;
+//        }
+//        mVideoView.setLayoutParams(lp);
 
         mPlayView.setVisibility(View.VISIBLE);
 
         mDuration = mVideoView.getDuration();
         setSeekBarPosition();
-
         setTimeFrames();
         setTimeVideo(0);
-
         if (mOnK4LVideoListener != null) {
             mOnK4LVideoListener.onVideoPrepared();
         }
@@ -587,7 +588,7 @@ public class K4LVideoTrimmer extends FrameLayout {
         mVideoView.setVideoURI(mSrc);
         mVideoView.requestFocus();
 
-        mTimeLineView.setVideo(mSrc);
+        mTimeLineView.setVideo(mSrc,isVoice);
     }
 
     private static class MessageHandler extends Handler {
@@ -611,5 +612,8 @@ public class K4LVideoTrimmer extends FrameLayout {
                 sendEmptyMessageDelayed(0, 10);
             }
         }
+    }
+    public void isVoice(boolean isVoice){
+        this.isVoice = isVoice;
     }
 }

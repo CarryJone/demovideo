@@ -9,6 +9,7 @@ android {
         versionCode 1
         versionName "1.3"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
     }
     buildTypes {
         release {
@@ -18,8 +19,8 @@ android {
     }
     useLibrary 'org.apache.http.legacy'
 }
-repositories{
-    flatDir{
+repositories {
+    flatDir {
         dirs 'libs'
     }
     maven {
@@ -42,4 +43,5 @@ dependencies {
     implementation files('libs/mds-approval-lib.jar')
     implementation files('libs/pushservice-5.1.0.48.jar')
     compile project(':k4l-video-trimmer')
+    implementation 'com.android.support:multidex:1.0.3'
 }

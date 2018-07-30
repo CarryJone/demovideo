@@ -9,27 +9,35 @@
 
     <Button
         android:id="@+id/video"
+        android:layout_weight="1"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_margin="50dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_horizontal|center_vertical"
         android:text="視訊功能"
         android:textSize="25dp"/>
     <Button
     android:id="@+id/film"
+        android:layout_weight="1"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_margin="50dp"
+    android:layout_height="match_parent"
     android:layout_gravity="center_horizontal"
     android:text="錄影功能"
     android:textSize="25dp"/>
     <Button
         android:id="@+id/modify"
+        android:layout_weight="1"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="50dp"
+        android:layout_height="match_parent"
         android:layout_gravity="center_horizontal"
         android:text="影片編輯"
+        android:textSize="25dp"/>
+    <Button
+        android:id="@+id/voice"
+        android:layout_weight="1"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_horizontal"
+        android:text="錄音功能"
         android:textSize="25dp"/>
 
 </LinearLayout>

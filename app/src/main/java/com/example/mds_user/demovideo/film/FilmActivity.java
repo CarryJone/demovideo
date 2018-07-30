@@ -3,15 +3,22 @@ package com.example.mds_user.demovideo.film;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.PixelFormat;
+import android.hardware.Camera;
 import android.media.MediaRecorder;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.os.SystemClock;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.FileProvider;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -20,11 +27,18 @@ import android.view.View.OnClickListener;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.Chronometer;
+import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.example.mds_user.demovideo.BuildConfig;
 import com.example.mds_user.demovideo.R;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * class name：TestBasicVideo<BR>
@@ -35,8 +49,9 @@ import java.io.IOException;
  * @author CODYY)peijiangping
  */
 public class FilmActivity extends Activity implements SurfaceHolder.Callback {
-    private Button start;// 開始錄製按鈕
-    private Button stop;// 停止錄製按鈕
+    private ImageView start;// 開始錄製按鈕
+    private ImageView stop;// 停止錄製按鈕
+    private ImageView change;// 鏡頭轉換按鈕
     private MediaRecorder mediarecorder;// 錄製視頻的類
     private SurfaceView surfaceview;// 顯示視頻的控制項
     // 用來顯示視頻的一個介面，我靠不用還不行，也就是說用mediarecorder錄製視頻還得給個介面看
@@ -46,7 +61,8 @@ public class FilmActivity extends Activity implements SurfaceHolder.Callback {
     private Handler handler;
     private  Runnable r;
     private int count = 0;
-    private  boolean isgo = false;
+    private Camera camera;
+    private Chronometer chronometer;
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -55,7 +71,7 @@ public class FilmActivity extends Activity implements SurfaceHolder.Callback {
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);// 設置全屏
         mContext = this;
 // 設置橫屏顯示
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+//        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 // 選擇支援半透明模式,在有surfaceview的activity中使用。
         getWindow().setFormat(PixelFormat.TRANSLUCENT);
         setContentView(R.layout.activity_film);
@@ -63,21 +79,24 @@ public class FilmActivity extends Activity implements SurfaceHolder.Callback {
     }
 
     private void init() {
-        start = (Button) this.findViewById(R.id.start);
-        stop = (Button) this.findViewById(R.id.stop);
+        start = (ImageView) this.findViewById(R.id.start);
+        stop = (ImageView) this.findViewById(R.id.stop);
+        change = (ImageView) this.findViewById(R.id.change);
+        chronometer = (Chronometer) findViewById(R.id.chronometer2);
         start.setOnClickListener(new TestVideoListener());
         stop.setOnClickListener(new TestVideoListener());
+        change.setOnClickListener(new TestVideoListener());
         surfaceview = (SurfaceView) this.findViewById(R.id.surfaceview);
         SurfaceHolder holder = surfaceview.getHolder();// 取得holder
         holder.addCallback(this); // holder加入回檔介面
 // setType必須設置，要不出錯.
+
         holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-        stop.setEnabled(false);
         handler = new Handler();
         r = new Runnabletime();
-        setPermission();//權限訪問
         String path = Environment.getExternalStorageDirectory().getAbsolutePath();
-        int result = FileUtils.createDir(path + "/demos/file/tmp/test");
+//        String path = getFilesDir().getPath();
+        int result = FileUtils.createDir(path + "/demos/file/tmp/before");
 
     }
 
@@ -86,19 +105,19 @@ public class FilmActivity extends Activity implements SurfaceHolder.Callback {
         @Override
         public void onClick(View v) {
             if (v == start) {
-                if (isgo){
-                    Toast.makeText(mContext,"影片上傳中",Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                Dialog_mes dialog_mes = new Dialog_mes(mContext);
+                Dialog_mes dialog_mes = new Dialog_mes(mContext,false);
                 dialog_mes.show();
 
             }
             if (v == stop) {
                 handler.removeCallbacks(r);
+//                Toast.makeText(mContext,"影片時間"+ chronometer.getTransformationMethod().toString(),Toast.LENGTH_SHORT).show();
+                chronometer.stop();
+                chronometer.setBase(SystemClock.elapsedRealtime());
                 count = 0;
-                start.setEnabled(true);
-                stop.setEnabled(false);
+                start.setVisibility(View.VISIBLE);
+                stop.setVisibility(View.GONE);
+                change.setVisibility(View.VISIBLE);
                 if (mediarecorder != null) {
 // 停止錄製
                     mediarecorder.stop();
@@ -107,36 +126,66 @@ public class FilmActivity extends Activity implements SurfaceHolder.Callback {
                     mediarecorder = null;
                 }
 
-                handler.post(r);
-                updata();
+//                handler.post(r);
+//                updata();
+                releaseCamera();
+                //android 超過N版本要外開需要FileProvider
+                File file = new File(FileUtils.path + "/" + FileUtils.name + ".mp4");
+                Uri uri = null;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
+                    uri = FileProvider.getUriForFile(mContext, "com.example.mds_user.demovideo.fileProvider",file);
+                }else {
+//                    uri = Uri.parse("content://com.example.mds_user.demovideo/"+FileUtils.path + "/" + FileUtils.name + ".mp4");
+                    uri = Uri.fromFile(new File(FileUtils.path + "/" + FileUtils.name + ".mp4"));
+                }
+                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                intent.setDataAndType(uri, "video/mp4");
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                startActivity(intent);
+            }
+            if (v == change){
+                switchFrontCamera();
             }
         }
-
     }
     public void video(){
         count = 0;
         handler.post(r);
-        start.setEnabled(false);
-        stop.setEnabled(true);
+        start.setVisibility(View.GONE);
+        stop.setVisibility(View.VISIBLE);
+        change.setVisibility(View.GONE);
         mediarecorder = new MediaRecorder();// 創建mediarecorder物件
+        releaseCamera();
+        reStartCamera(cameraPosition==0?1:0);
+
+        camera.unlock();
+        mediarecorder.setCamera(camera);
 // 設置錄製視頻源為Camera(相機)
+//        mediarecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         mediarecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
         mediarecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
+        mediarecorder.setOrientationHint(90);
+        if (cameraPosition == 0){
+            mediarecorder.setOrientationHint(270);
+        }
 // 設置錄製完成後視頻的封裝格式THREE_GPP為3gp.MPEG_4為mp4
         mediarecorder
                 .setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
 // 設置錄製的視頻編碼h263 h264
-        mediarecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+        mediarecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
         mediarecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
-        mediarecorder.setVideoEncodingBitRate(1024*1024);
+        mediarecorder.setVideoEncodingBitRate(512*1024);
 // 設置視頻錄製的解析度。必須放在設置編碼和格式的後面，否則報錯
         mediarecorder.setVideoSize(720,480);
+//        mediarecorder.setVideoSize(720,480);
 // 設置錄製的視頻幀率。必須放在設置編碼和格式的後面，否則報錯
         mediarecorder.setVideoFrameRate(20);
         mediarecorder.setPreviewDisplay(surfaceHolder.getSurface());
 // 設置視頻檔輸出的路徑
         mediarecorder.setOutputFile(FileUtils.path+"/"+FileUtils.name+".mp4");
         Toast.makeText(mContext,"開始錄影",Toast.LENGTH_SHORT).show();
+        chronometer.setBase(SystemClock.elapsedRealtime());
+        chronometer.start();
         try {
 // 準備錄製
             mediarecorder.prepare();
@@ -150,20 +199,21 @@ public class FilmActivity extends Activity implements SurfaceHolder.Callback {
             e.printStackTrace();
         }
     }
-    public void updata(){
-        new UploadVideoAsyncTask(mContext, mHandler).execute(FileUtils.path);
-        isgo = true;
-        Toast.makeText(mContext,"影片上傳中",Toast.LENGTH_SHORT).show();
-    }
-    public Handler mHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-            String data = msg.getData().getString("data");
-            Log.d("data",count+"");
-            handler.removeCallbacks(r);
-            isgo = false;
-            Toast.makeText(mContext,msg.getData().get("data").toString(),Toast.LENGTH_SHORT).show();
-        }};
+
+    //影片上傳
+//    public void updata(){
+//        new UploadVideoAsyncTask(mContext, mHandler).execute(FileUtils.path);
+//
+//        Toast.makeText(mContext,"影片上傳中",Toast.LENGTH_SHORT).show();
+//    }
+//    public Handler mHandler = new Handler() {
+//        @Override
+//        public void handleMessage(Message msg) {
+//            String data = msg.getData().getString("data");
+//            Log.d("data",count+"");
+//            handler.removeCallbacks(r);
+//            Toast.makeText(mContext,msg.getData().get("data").toString(),Toast.LENGTH_SHORT).show();
+//        }};
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width,
@@ -176,6 +226,7 @@ public class FilmActivity extends Activity implements SurfaceHolder.Callback {
     public void surfaceCreated(SurfaceHolder holder) {
 // 將holder，這個holder為開始在oncreat裡面取得的holder，將它賦給surfaceHolder
         surfaceHolder = holder;
+        switchFrontCamera();
     }
 
     @Override
@@ -194,20 +245,63 @@ public class FilmActivity extends Activity implements SurfaceHolder.Callback {
             handler.postDelayed(r,1000);
         }
     }
-    public void setPermission() {
-        int permission1 = ActivityCompat.checkSelfPermission(this,
-                Manifest.permission.RECORD_AUDIO);
-        int permission2 = ActivityCompat.checkSelfPermission(this,
-                Manifest.permission.CAMERA);
-        int permission3 = ActivityCompat.checkSelfPermission(this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        String[] permissions = new String[]{ Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
-        if (permission1 != PackageManager.PERMISSION_GRANTED||permission2 != PackageManager.PERMISSION_GRANTED||permission3 != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions( FilmActivity.this,
-                    permissions,1);
-        }else{
-                //已有權限，可進行檔案存取
+
+    private void releaseCamera() {
+        if (camera != null) {
+            camera.setPreviewCallback(null);
+            camera.stopPreview();
+            camera.release();
+            camera = null;
+        }
+    }
+
+    //切换摄像头
+    private int cameraPosition = 0; //当前选用的摄像头，1后置 0前置
+
+    public void switchFrontCamera() {
+        int cameraCount = Camera.getNumberOfCameras();//得到摄像头的个数
+        Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
+
+        for (int i = 0; i < cameraCount; i++) {
+            Camera.getCameraInfo(i, cameraInfo);//得到每一个摄像头的信息
+            if (cameraPosition == 1) {
+                //现在是后置，变更为前置
+                if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {//代表摄像头的方位，CAMERA_FACING_FRONT前置      CAMERA_FACING_BACK后置
+                    //重新打开
+                    reStartCamera(i);
+                    cameraPosition = 0;
+                    break;
+                }
+            } else {
+                //现在是前置， 变更为后置
+                if (cameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_BACK) {//代表摄像头的方位，CAMERA_FACING_FRONT前置      CAMERA_FACING_BACK后置
+                    reStartCamera(i);
+                    cameraPosition = 1;
+                    break;
+                }
             }
         }
+    }
+
+    //重新打开预览
+    public void reStartCamera(int i) {
+        releaseCamera();
+        try {
+            camera = Camera.open(i);//打开当前选中的摄像头
+            camera.setPreviewDisplay(surfaceHolder);//通过surfaceview显示取景画面
+            camera.setDisplayOrientation(90);
+//            camera.setDisplayOrientation(90);// 屏幕方向
+            camera.startPreview();//开始预览
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        releaseCamera();
+        mediarecorder = null;
+    }
 }
 

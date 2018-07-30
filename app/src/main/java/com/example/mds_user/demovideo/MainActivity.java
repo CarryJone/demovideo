@@ -14,22 +14,30 @@ import com.example.mds_user.demovideo.filelist.FilelistActivity;
 import com.example.mds_user.demovideo.film.FilmActivity;
 import com.example.mds_user.demovideo.gcm.GCMUtility;
 import com.example.mds_user.demovideo.video.VideoActivity;
+import com.example.mds_user.demovideo.voice.VoiceActivity;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
-Button videobtn,filmbtn,filebtn;
+Button videobtn,filmbtn,filebtn,voice;
 Context context;
 boolean isPermission = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Bundle bundle = getIntent().getExtras();
+        if (bundle != null) {
+            String userid = bundle.getString("userid");
+            String pwd = bundle.getString("pwd");
+        }
         context = this;
         videobtn = (Button) findViewById(R.id.video);
         filmbtn = (Button) findViewById(R.id.film);
         filebtn = (Button) findViewById(R.id.modify);
+        voice = (Button) findViewById(R.id.voice);
         videobtn.setOnClickListener(this);
         filmbtn.setOnClickListener(this);
         filebtn.setOnClickListener(this);
+        voice.setOnClickListener(this);
         setPermission();
 
 
@@ -67,6 +75,10 @@ boolean isPermission = false;
             case R.id.modify:
                 Intent intent3 = new Intent(context, FilelistActivity.class);
                 startActivity(intent3);
+                return;
+            case R.id.voice:
+                Intent intent4 = new Intent(context, VoiceActivity.class);
+                startActivity(intent4);
                 return;
         }
     }

@@ -55,9 +55,14 @@ public class TrimVideoUtils {
     private static final String TAG = TrimVideoUtils.class.getSimpleName();
 
     public static void startTrim(@NonNull File src, @NonNull String dst, long startMs, long endMs, @NonNull OnTrimVideoListener callback) throws IOException {
-        final String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
-        final String fileName = "MP4_" + timeStamp + ".mp4";
-        final String filePath = dst + fileName;
+         String filePath = "";
+        if (!dst.contains(".mp4")) {
+            final String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
+            final String fileName = "MP4_" + timeStamp + ".mp4";
+            filePath = dst + fileName;
+        }else{
+            filePath = dst;
+        }
 
         File file = new File(filePath);
         file.getParentFile().mkdirs();

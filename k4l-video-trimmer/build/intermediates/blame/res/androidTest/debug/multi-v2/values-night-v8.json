@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "C:\\Users\\mds_user\\Downloads\\k4l-video-trimmer-develop\\k4l-video-trimmer-develop\\k4l-video-trimmer\\build\\intermediates\\incremental\\mergeDebugAndroidTestResources\\merged.dir\\values-night-v8\\values-night-v8.xml",
+            "outputFile": "C:\\Users\\mds_user\\Documents\\DemoVideo\\k4l-video-trimmer\\build\\intermediates\\incremental\\mergeDebugAndroidTestResources\\merged.dir\\values-night-v8\\values-night-v8.xml",
             "map": [
                 {
                     "source": "C:\\Users\\mds_user\\.gradle\\caches\\transforms-1\\files-1.1\\appcompat-v7-24.0.0.aar\\c344ae40b3102e09dcb18e9ae9c5fec2\\res\\values-night-v8\\values-night-v8.xml",

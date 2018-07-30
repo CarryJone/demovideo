@@ -42,6 +42,7 @@ public class TimeLineView extends View {
     private Uri mVideoUri;
     private int mHeightView;
     private LongSparseArray<Bitmap> mBitmapList = null;
+    private boolean isVoice = false;
 
     public TimeLineView(@NonNull Context context, AttributeSet attrs) {
         this(context, attrs, 0);
@@ -97,15 +98,17 @@ public class TimeLineView extends View {
 
                                                final long interval = videoLengthInMs / numThumbs;
 
-                                               for (int i = 0; i < numThumbs; ++i) {
-                                                   Bitmap bitmap = mediaMetadataRetriever.getFrameAtTime(i * interval, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
-                                                   // TODO: bitmap might be null here, hence throwing NullPointerException. You were right
-                                                   try {
-                                                       bitmap = Bitmap.createScaledBitmap(bitmap, thumbWidth, thumbHeight, false);
-                                                   } catch (Exception e) {
-                                                       e.printStackTrace();
+                                               if (!isVoice) {
+                                                   for (int i = 0; i < numThumbs; ++i) {
+                                                       Bitmap bitmap = mediaMetadataRetriever.getFrameAtTime(i * interval, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+                                                       // TODO: bitmap might be null here, hence throwing NullPointerException. You were right
+                                                       try {
+                                                           bitmap = Bitmap.createScaledBitmap(bitmap, thumbWidth, thumbHeight, false);
+                                                       } catch (Exception e) {
+                                                           e.printStackTrace();
+                                                       }
+                                                       thumbnailList.put(i, bitmap);
                                                    }
-                                                   thumbnailList.put(i, bitmap);
                                                }
 
                                                mediaMetadataRetriever.release();
@@ -148,7 +151,8 @@ public class TimeLineView extends View {
         }
     }
 
-    public void setVideo(@NonNull Uri data) {
+    public void setVideo(@NonNull Uri data,boolean isVoice) {
         mVideoUri = data;
+        this.isVoice = isVoice;
     }
 }

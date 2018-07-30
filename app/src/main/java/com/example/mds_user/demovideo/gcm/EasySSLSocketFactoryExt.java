@@ -59,7 +59,7 @@ public class EasySSLSocketFactoryExt extends EasySSLSocketFactory {
 			try {
 				caInput=(InputStream)caInputList.get(i);
 				ca = cf.generateCertificate(caInput);
-				// Create a KeyStore containing our trusted CAs				
+				// Create a KeyStore containing our trusted CAs
 				keyStore.setCertificateEntry("ca"+i, ca);
 			}catch(Exception e) {
 				TraceUtility.trace(TraceType.error,"EasySSLSocketFactoryExt.addCertificateEntry()",e.toString());

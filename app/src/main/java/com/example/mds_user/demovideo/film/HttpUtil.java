@@ -2,6 +2,8 @@ package com.example.mds_user.demovideo.film;
 
 import android.util.Log;
 
+import com.example.mds_user.demovideo.filelist.Nowdata;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -26,6 +28,10 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okio.BufferedSink;
+import okio.Buffer;
+import okio.Okio;
+import okio.Source;
 
 public class HttpUtil {
 
@@ -99,9 +105,9 @@ public class HttpUtil {
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("userid", "takz159")
                 .addFormDataPart("meetingid", "28942983")
-                .addFormDataPart("filename", FileUtils.name+".mp4")
+                .addFormDataPart("filename",  Nowdata.name)
 //                        .addFormDataPart("file", "12rfffsdgseggsegsegsge")
-                .addFormDataPart("file",FileUtils.name+".mp4",
+                .addFormDataPart("file", Nowdata.name,
                         RequestBody.create(MEDIA_TYPE_VIDEO,vdo_mFile))
                 .build();
         Request request = new Request.Builder()
@@ -111,4 +117,68 @@ public class HttpUtil {
         Response response = client.newCall(request).execute();
         return response.body().string();
 }
+        public static String post2(String url, String videoPath) throws IOException {
+//                RequestBody body = RequestBody.create(JSON, json);
+
+                OkHttpClient.Builder builder = new OkHttpClient.Builder();
+                builder.connectTimeout(5, TimeUnit.MINUTES)
+                        .writeTimeout(5, TimeUnit.MINUTES)
+                        .readTimeout(5, TimeUnit.MINUTES);
+
+                OkHttpClient client = builder.build();
+
+                File vdo_mFile = new File(videoPath);
+
+                MultipartBody.Builder builder1 = new MultipartBody.Builder();
+                builder1.setType(MultipartBody.FORM);
+                 builder1.addFormDataPart("file", Nowdata.name,
+                        createCustomRequestBody(MEDIA_TYPE_VIDEO, vdo_mFile, vdo_mFile, new ProgressListener() {
+                                @Override
+                                public void onProgress(long totalBytes, long remainingBytes, boolean done) {
+                                        System.out.print((totalBytes - remainingBytes) * 100 / totalBytes + "%");
+                                        Log.d("進度:",(totalBytes - remainingBytes) * 100 / totalBytes + "%");
+                                }
+                        }));
+                RequestBody body = builder1.build();
+                Request request = new Request.Builder()
+                        .url(url)
+                        .post(body)
+                        .build();
+
+                Response response = client.newCall(request).execute();
+                return response.body().string();
+        }
+        public static RequestBody createCustomRequestBody(final MediaType contentType, File vdo_mFile, final File file, final ProgressListener listener) {
+                return new RequestBody() {
+                        @Override public MediaType contentType() {
+                                return contentType;
+                        }
+
+                        @Override public long contentLength() {
+                                return file.length();
+                        }
+
+                        @Override public void writeTo(BufferedSink sink) throws IOException {
+                                Source source;
+                                try {
+                                        source = Okio.source(file);
+                                        //sink.writeAll(source);
+                                        Buffer buf = new Buffer();
+                                        Long remaining = contentLength();
+                                        for (long readCount; (readCount = source.read(buf, 2048)) != -1; ) {
+                                                sink.write(buf, readCount);
+                                                listener.onProgress(contentLength(), remaining -= readCount, remaining == 0);
+
+                                        }
+                                } catch (Exception e) {
+                                        e.printStackTrace();
+                                }
+                        }
+                };
+        }
+
+        interface ProgressListener {
+                void onProgress(long totalBytes, long remainingBytes, boolean done);
+        }
 }
+
