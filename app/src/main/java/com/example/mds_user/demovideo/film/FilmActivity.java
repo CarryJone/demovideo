@@ -1,42 +1,35 @@
 package com.example.mds_user.demovideo.film;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
-import android.content.pm.PackageManager;
 import android.graphics.PixelFormat;
 import android.hardware.Camera;
 import android.media.MediaRecorder;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
-import android.os.Message;
 import android.os.SystemClock;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.FileProvider;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.example.mds_user.demovideo.BuildConfig;
 import com.example.mds_user.demovideo.R;
+import com.example.mds_user.demovideo.VoideUtils;
+import com.example.mds_user.demovideo.Voide_Audio_DataBase;
+import com.example.mds_user.demovideo.listpage.CasedetailsActivity;
+import com.example.mds_user.demovideo.listpage.ListpageActivity;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -63,6 +56,8 @@ public class FilmActivity extends Activity implements SurfaceHolder.Callback {
     private int count = 0;
     private Camera camera;
     private Chronometer chronometer;
+    private int num = -1;
+    private Voide_Audio_DataBase dataBase;
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -75,6 +70,7 @@ public class FilmActivity extends Activity implements SurfaceHolder.Callback {
 // 選擇支援半透明模式,在有surfaceview的activity中使用。
         getWindow().setFormat(PixelFormat.TRANSLUCENT);
         setContentView(R.layout.activity_film);
+        num = getIntent().getIntExtra("num",-1);
         init();
     }
 
@@ -89,29 +85,43 @@ public class FilmActivity extends Activity implements SurfaceHolder.Callback {
         surfaceview = (SurfaceView) this.findViewById(R.id.surfaceview);
         SurfaceHolder holder = surfaceview.getHolder();// 取得holder
         holder.addCallback(this); // holder加入回檔介面
+
 // setType必須設置，要不出錯.
 
         holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
         handler = new Handler();
         r = new Runnabletime();
-        String path = Environment.getExternalStorageDirectory().getAbsolutePath();
-//        String path = getFilesDir().getPath();
-        int result = FileUtils.createDir(path + "/demos/file/tmp/before");
+//        String path = Environment.getExternalStorageDirectory().getAbsolutePath();
+////        String path = getFilesDir().getPath();
+//        int result = MyFileUtils.createDir(path + "/demos/file/tmp/before");
 
     }
+    private void addView()
+    {
+        LayoutInflater controlInflater = LayoutInflater.from(getBaseContext());
+        View viewControl = controlInflater.inflate(R.layout.overlay, null);
+        LinearLayout.LayoutParams layoutParamsControl = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+        this.addContentView(viewControl, layoutParamsControl);
 
+    }
     class TestVideoListener implements OnClickListener {
 
         @Override
         public void onClick(View v) {
             if (v == start) {
-                Dialog_mes dialog_mes = new Dialog_mes(mContext,false);
-                dialog_mes.show();
+//                Dialog_mes dialog_mes = new Dialog_mes(mContext,false);
+//                dialog_mes.show();
 
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+                Date curDate = new Date(System.currentTimeMillis()) ; // 獲取當前時間
+                String str = formatter.format(curDate);
+                MyFileUtils.name = "video_"+str;
+                dataBase = VoideUtils.VADataLIST.get(num);
+                dataBase.setFilename(MyFileUtils.name);
+                video();
             }
             if (v == stop) {
                 handler.removeCallbacks(r);
-//                Toast.makeText(mContext,"影片時間"+ chronometer.getTransformationMethod().toString(),Toast.LENGTH_SHORT).show();
                 chronometer.stop();
                 chronometer.setBase(SystemClock.elapsedRealtime());
                 count = 0;
@@ -125,23 +135,20 @@ public class FilmActivity extends Activity implements SurfaceHolder.Callback {
                     mediarecorder.release();
                     mediarecorder = null;
                 }
-
-//                handler.post(r);
-//                updata();
                 releaseCamera();
-                //android 超過N版本要外開需要FileProvider
-                File file = new File(FileUtils.path + "/" + FileUtils.name + ".mp4");
-                Uri uri = null;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
-                    uri = FileProvider.getUriForFile(mContext, "com.example.mds_user.demovideo.fileProvider",file);
-                }else {
-//                    uri = Uri.parse("content://com.example.mds_user.demovideo/"+FileUtils.path + "/" + FileUtils.name + ".mp4");
-                    uri = Uri.fromFile(new File(FileUtils.path + "/" + FileUtils.name + ".mp4"));
-                }
-                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-                intent.setDataAndType(uri, "video/mp4");
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                startActivity(intent);
+//                File file = new File(MyFileUtils.before_path + "/" + MyFileUtils.name + ".mp4");
+//                Dialog_mes dialog_mes = new Dialog_mes(mContext,false,file);
+//                dialog_mes.show();
+//                VoideUtils.VideoPlay(mContext,file);
+//                dataBase.setOriginal_file(file);
+                File file = new File(MyFileUtils.before_path + "/" + dataBase.getFilename()+ ".mp4");
+                dataBase.setOriginal_file(file);
+                dataBase.setFile(null);
+                VoideUtils.UpDataFromDB(dataBase);
+                Intent intent = new Intent(mContext, CasedetailsActivity.class);
+                intent.putExtra("num",num);
+                setResult(101,intent);
+                finish();
             }
             if (v == change){
                 switchFrontCamera();
@@ -182,7 +189,7 @@ public class FilmActivity extends Activity implements SurfaceHolder.Callback {
         mediarecorder.setVideoFrameRate(20);
         mediarecorder.setPreviewDisplay(surfaceHolder.getSurface());
 // 設置視頻檔輸出的路徑
-        mediarecorder.setOutputFile(FileUtils.path+"/"+FileUtils.name+".mp4");
+        mediarecorder.setOutputFile(MyFileUtils.before_path+"/"+ MyFileUtils.name+".mp4");
         Toast.makeText(mContext,"開始錄影",Toast.LENGTH_SHORT).show();
         chronometer.setBase(SystemClock.elapsedRealtime());
         chronometer.start();
@@ -202,7 +209,7 @@ public class FilmActivity extends Activity implements SurfaceHolder.Callback {
 
     //影片上傳
 //    public void updata(){
-//        new UploadVideoAsyncTask(mContext, mHandler).execute(FileUtils.path);
+//        new UploadVideoAsyncTask(mContext, mHandler).execute(MyFileUtils.path);
 //
 //        Toast.makeText(mContext,"影片上傳中",Toast.LENGTH_SHORT).show();
 //    }
@@ -302,6 +309,15 @@ public class FilmActivity extends Activity implements SurfaceHolder.Callback {
         super.onDestroy();
         releaseCamera();
         mediarecorder = null;
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Intent intent = new Intent(mContext, CasedetailsActivity.class);
+        intent.putExtra("num",num);
+        setResult(103,intent);
+        finish();
     }
 }
 

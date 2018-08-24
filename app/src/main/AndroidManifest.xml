@@ -113,10 +113,12 @@
         <activity
             android:name=".filelist.FilelistActivity"
             android:label="@string/title_activity_filelist"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".filelist.TrimmerActivity"
             android:label="@string/title_activity_filelist"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
 
         <provider
@@ -128,16 +130,16 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
-        <provider
-            android:name=".MyProvider"
-            android:authorities="com.example.mds_user.demovideo"
-            android:exported="true" />
 
         <activity
             android:name=".voice.VoiceActivity"
             android:label="@string/title_activity_voice"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".listpage.ListpageActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".listpage.CasedetailsActivity"
+            android:screenOrientation="portrait"></activity>
     </application>
 
 </manifest>

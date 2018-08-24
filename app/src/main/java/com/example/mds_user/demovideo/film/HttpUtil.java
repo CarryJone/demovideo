@@ -2,6 +2,8 @@ package com.example.mds_user.demovideo.film;
 
 import android.util.Log;
 
+import com.example.mds_user.demovideo.VoideUtils;
+import com.example.mds_user.demovideo.Voide_Audio_DataBase;
 import com.example.mds_user.demovideo.filelist.Nowdata;
 
 import org.apache.http.HttpResponse;
@@ -17,7 +19,9 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -28,8 +32,9 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import okio.BufferedSink;
+import okhttp3.internal.Util;
 import okio.Buffer;
+import okio.BufferedSink;
 import okio.Okio;
 import okio.Source;
 
@@ -90,7 +95,7 @@ public class HttpUtil {
                 Log.d(TAG, "doPost Result : " + result);
                 return result;
         }
-        public static String post(String url, String videoPath) throws IOException {
+        public static String post(String url, String videoPath,int num) throws IOException {
 //                RequestBody body = RequestBody.create(JSON, json);
 
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
@@ -99,16 +104,27 @@ public class HttpUtil {
                 .readTimeout(5, TimeUnit.MINUTES);
 
         OkHttpClient client = builder.build();
-
+        Voide_Audio_DataBase dataBase = VoideUtils.VADataLIST.get(num);
         File vdo_mFile = new File(videoPath);
-        RequestBody body = new MultipartBody.Builder()
+                byte[] data = new byte[1024];
+                try {
+                        data = getBytes(vdo_mFile);
+                        int a = data.length;
+
+                } catch (Exception e) {
+                        e.printStackTrace();
+                }
+                byte[] data2 = new byte[data.length];
+                System.arraycopy(data,50,data2,0,1024);
+                int b = data2.length;
+                RequestBody body = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("userid", "takz159")
                 .addFormDataPart("meetingid", "28942983")
-                .addFormDataPart("filename",  Nowdata.name)
+                .addFormDataPart("filename",  dataBase.getFilename()+".mp4")
 //                        .addFormDataPart("file", "12rfffsdgseggsegsegsge")
-                .addFormDataPart("file", Nowdata.name,
-                        RequestBody.create(MEDIA_TYPE_VIDEO,vdo_mFile))
+                .addFormDataPart("file", dataBase.getFilename(),
+                        RequestBody.create(MEDIA_TYPE_VIDEO, vdo_mFile))
                 .build();
         Request request = new Request.Builder()
                 .url(url)
@@ -126,9 +142,19 @@ public class HttpUtil {
                         .readTimeout(5, TimeUnit.MINUTES);
 
                 OkHttpClient client = builder.build();
-
+                int num = 100;
                 File vdo_mFile = new File(videoPath);
+                byte[] data = new byte[1024];
+                try {
+                        data = getBytes(vdo_mFile);
+                        int a = data.length;
 
+                } catch (Exception e) {
+                        e.printStackTrace();
+                }
+                byte[] data2 = new byte[data.length-num];
+                System.arraycopy(data,num,data2,0,data.length-num);
+                int b = data2.length;
                 MultipartBody.Builder builder1 = new MultipartBody.Builder();
                 builder1.setType(MultipartBody.FORM);
                  builder1.addFormDataPart("file", Nowdata.name,
@@ -175,6 +201,17 @@ public class HttpUtil {
                                 }
                         }
                 };
+        }
+        private static byte[] getBytes(File f) throws Exception {
+                FileInputStream in = new FileInputStream(f);
+                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                byte[] b = new byte[1024];
+                int n;
+                while ((n = in.read(b)) != -1) {
+                        out.write(b, 0, n);
+                }
+                in.close();
+                return out.toByteArray();
         }
 
         interface ProgressListener {

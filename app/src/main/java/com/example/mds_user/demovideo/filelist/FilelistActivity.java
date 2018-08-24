@@ -3,13 +3,10 @@ package com.example.mds_user.demovideo.filelist;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
-import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -24,12 +21,14 @@ import android.widget.Toast;
 
 
 import com.example.mds_user.demovideo.R;
+import com.example.mds_user.demovideo.VoideUtils;
 import com.example.mds_user.demovideo.film.Dialog_mes;
-import com.example.mds_user.demovideo.film.FilmActivity;
+import com.example.mds_user.demovideo.film.MyFileUtils;
 import com.example.mds_user.demovideo.film.UploadVideoAsyncTask;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+
 import life.knowledge4.videotrimmer.utils.FileUtils;
 
 public class FilelistActivity extends AppCompatActivity {
@@ -39,8 +38,8 @@ public class FilelistActivity extends AppCompatActivity {
     TextView title;
     ListView listView;
     Button before,after;
-    String beforepath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/demos/file/tmp/before";
-    String afterpath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/demos/file/tmp/after";
+    String beforepath = MyFileUtils.before_path;
+    String afterpath = MyFileUtils.after_path;
     FileAdapter adapter;
     private Handler handler;
     private  Runnable r;
@@ -62,6 +61,7 @@ public class FilelistActivity extends AppCompatActivity {
         changedata();
         handler = new Handler();
         r = new Runnabletime();
+        VoideUtils.VADataLIST.size();
         setView();
     }
 
@@ -93,16 +93,17 @@ public class FilelistActivity extends AppCompatActivity {
                     startTrimActivity(Uri.fromFile(fileDatas.get(position).file));
                     Toast.makeText(context, fileDatas.get(position).getPath(), Toast.LENGTH_SHORT).show();
                 }else{
-                    Uri uri = null;
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
-                        uri = FileProvider.getUriForFile(context,"com.example.mds_user.demovideo.fileProvider",fileDatas.get(position).file);
-                    }else {
-                        uri = Uri.fromFile(fileDatas.get(position).file);
-                    }
-                    Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-                    intent.setDataAndType(uri, "video/mp4");
-                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    startActivity(intent);
+//                    Uri uri = null;
+//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
+//                        uri = FileProvider.getUriForFile(context,"com.example.mds_user.demovideo.fileProvider",fileDatas.get(position).file);
+//                    }else {
+//                        uri = Uri.fromFile(fileDatas.get(position).file);
+//                    }
+//                    Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+//                    intent.setDataAndType(uri, "video/mp4");
+//                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+//                    startActivity(intent);
+                    VoideUtils.VideoPlay(context,fileDatas.get(position).file);
 
                 }
             }
@@ -127,7 +128,7 @@ public class FilelistActivity extends AppCompatActivity {
     }
 //    影片上傳
     public void updata(String path){
-        new UploadVideoAsyncTask(context, mHandler).execute(path);
+        new UploadVideoAsyncTask(context, mHandler,1).execute(path);
         count = 0;
         handler.post(r);
         Toast.makeText(context,"影片上傳中",Toast.LENGTH_SHORT).show();

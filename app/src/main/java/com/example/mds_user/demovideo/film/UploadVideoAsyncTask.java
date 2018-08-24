@@ -27,11 +27,13 @@ public class UploadVideoAsyncTask extends AsyncTask<String, Void, String> {
     private Context mContext;
 
     private Handler mHandler;
+    private int num;
 
-    public UploadVideoAsyncTask(Context context, Handler handler) {
+    public UploadVideoAsyncTask(Context context, Handler handler,int num) {
         super();
         mContext = context;
         mHandler = handler;
+        this.num = num;
     }
 
     @Override
@@ -40,19 +42,19 @@ public class UploadVideoAsyncTask extends AsyncTask<String, Void, String> {
         String result = null;
 
         /** AVI Base64編碼, 傳入檔案路徑 **/
-//        String mp4 =  getBase64EncoderString(FileUtils.path+"/"+FileUtils.name+".mp4");
+//        String mp4 =  getBase64EncoderString(MyFileUtils.path+"/"+MyFileUtils.name+".mp4");
 //
 //        List<NameValuePair> litParams = new ArrayList<NameValuePair>();
 //        litParams.add(new BasicNameValuePair("userid", "takz159"));
 //        litParams.add(new BasicNameValuePair("meetingid", "3345678"));
-//        litParams.add(new BasicNameValuePair("filename", FileUtils.getName()+".mp4"));
+//        litParams.add(new BasicNameValuePair("filename", MyFileUtils.getName()+".mp4"));
 //        litParams.add(new BasicNameValuePair("file", mp4));
 //
 //
 //        result = HttpUtil.doPost("http://cloud.mds.com.tw/Demo/SysFun/WebService/Demo_UploadVideo.ashx", litParams);
         try {
-//            result = HttpUtil.post("http://cloud.mds.com.tw/Demo/SysFun/WebService/Demo_UploadVideo.ashx", params[0]);
-            result = HttpUtil.post2("http://wcsap3.mds.com.tw:7001/mliweb/uploadTest.do", params[0]);
+            result = HttpUtil.post("http://cloud.mds.com.tw/Demo/SysFun/WebService/Demo_UploadVideo.ashx", params[0],num);
+//            result = HttpUtil.post2("http://wcsap3.mds.com.tw:7001/mliweb/uploadTest.do", params[0]);
 
         } catch (IOException e) {
             e.printStackTrace();

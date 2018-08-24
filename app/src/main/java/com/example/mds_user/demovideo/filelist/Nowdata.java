@@ -1,6 +1,6 @@
 package com.example.mds_user.demovideo.filelist;
 
-import android.os.Environment;
+import com.example.mds_user.demovideo.film.MyFileUtils;
 
 /**
  * Created by mds_user on 2018/7/24.
@@ -8,5 +8,5 @@ import android.os.Environment;
 
 public class Nowdata {
     public static String name = "";
-    public static String afterpath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/demos/file/tmp/after";
+    public static String afterpath = MyFileUtils.after_path;
 }

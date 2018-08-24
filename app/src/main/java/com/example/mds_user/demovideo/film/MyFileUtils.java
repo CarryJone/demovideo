@@ -9,14 +9,15 @@ import java.io.IOException;
  * Created by mds_user on 2018/7/10.
  */
 
-public class FileUtils {
+public class MyFileUtils {
 
-    private static final String TAG = "FileUtils";
+    private static final String TAG = "MyFileUtils";
 
     public static final int FLAG_SUCCESS = 1;//创建成功
     public static final int FLAG_EXISTS = 2;//已存在
     public static final int FLAG_FAILED = 3;//创建失败
-    public static String path = "";
+    public static String before_path = "";
+    public static String after_path = "";
     public static String name = "";
 
     /**
@@ -65,8 +66,13 @@ public class FileUtils {
      * @param dirPath 文件夹路径
      * @return 结果码
      */
-    public static int createDir (String dirPath) {
-        path = dirPath;
+    public static int createDir (String dirPath,int type) {//type 0剪輯前  1剪輯後
+        if (type ==0){
+            before_path = dirPath;
+        }else{
+            after_path = dirPath;
+        }
+
         File dir = new File(dirPath);
         //文件夹是否已经存在
         if (dir.exists()) {
@@ -91,6 +97,6 @@ public class FileUtils {
     }
 
     public static void setName(String name) {
-        FileUtils.name = name;
+        MyFileUtils.name = name;
     }
 }
