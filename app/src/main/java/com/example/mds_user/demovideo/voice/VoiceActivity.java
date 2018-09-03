@@ -1,13 +1,14 @@
 package com.example.mds_user.demovideo.voice;
 
-import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.speech.tts.TextToSpeech;
 import android.support.annotation.RequiresApi;
 import android.view.LayoutInflater;
@@ -23,7 +24,6 @@ import android.widget.Toast;
 import com.example.mds_user.demovideo.R;
 import com.example.mds_user.demovideo.VoideUtils;
 import com.example.mds_user.demovideo.Voide_Audio_DataBase;
-import com.example.mds_user.demovideo.film.Dialog_mes;
 import com.example.mds_user.demovideo.film.MyFileUtils;
 import com.example.mds_user.demovideo.listpage.CasedetailsActivity;
 
@@ -33,37 +33,53 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class VoiceActivity extends Activity {
 
     private MediaRecorder myAudioRecorder;
     private String outputFile = null;
-    private Button start,stop,play,pause;
+    private Button start,stop,pause;
     private Context context;
     private ListView listView;
     private ArrayList<String> data ;
     private TextToSpeech tts; //語音
     private int num =  -1;
+    private Timer timer;
+    private TextView time;
+    private boolean isRecording = false;
     private Voide_Audio_DataBase dataBase;
+    private int second = 0;
+    private int minute = 0;
+    private int hour = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_voice);
-        start = (Button)findViewById(R.id.button1);
-        stop = (Button)findViewById(R.id.button2);
-        play = (Button)findViewById(R.id.button3);
-        pause = (Button)findViewById(R.id.button4);
+        start = (Button)findViewById(R.id.buttonstart);
+        stop = (Button)findViewById(R.id.buttonstop);
+
+        pause = (Button)findViewById(R.id.buttonpause);
         listView = (ListView) findViewById(R.id.liststr);
+        time = (TextView) findViewById(R.id.time);
         context = this;
         num = getIntent().getIntExtra("num",-1);
         stop.setEnabled(false);
-        play.setEnabled(false);
+        pause.setEnabled(false);
         dataBase = VoideUtils.VADataLIST.get(num);
         data = new ArrayList<>();
-        data.add("先生（女士）您好：為保障您的權益，根據法令規定，現在將以錄音（影）方式紀錄本次銷售過程，請問您是否同意接受錄音（影）？（若客戶不同意，則終止銷售過程，本客戶不可購買投資型商品）");
-        data.add("我是，（出示登錄證）登錄證編號為" +
-                "目前登錄（服務）於＆＆＆公司，並獲得保誠人壽授權銷售投資型保單。以下銷售過程中我將說明本次銷售商品的重要內容並交付重要文件，且進行錄音（影），請您聽完後出聲回覆是否瞭解，謝謝。");
-        data.add("您所選擇的商品是保誠人壽投資型商品保單，繳費年期為年，繳繳費金額為元，保單相關費用包含保險成本與解約費用(轉換費用)，並自（扣除方式）中扣除費用，請問是否瞭解？");
+        data.add("5.說明商品重要條款內容、除外責任、保險商品說明書重要內容、建議書內容\n" +
+                "@商品重要條款內容、除外責任、保險商品說明書重要內容\n" +
+                "商品說明書的重要保單條款摘要已說明本商品重要條款內容與除外責任，另於重要特性與保險計畫詳細說明中亦說明本商品重要內容，請問您清楚嗎?\n" +
+                "@建議書內容\n" +
+                "保單帳戶價值試算表於建議書中已有說明，請問您清楚嗎?\n");
+        data.add("6.契撤期說明\n" +
+                "自簽收保單隔日起算，您有10日撤銷契約的權益，請問您清楚嗎?\n");
+        data.add("7.要保人聲明\n" +
+                "最後請您念出以下聲明文字以確認您的風險承擔與投保意願。\n" +
+                "我，ＯＯＯ(要保人姓名)已充分了解本商且願意承擔投資風險，所有文件均由本人親自簽名投保。\n");
 //        outputFile = Environment.getExternalStorageDirectory().getAbsolutePath();
 //        String path = getFilesDir().getPath();
 //        int result = MyFileUtils.createDir(outputFile + "/demos/file/tmp/before");
@@ -89,18 +105,32 @@ public class VoiceActivity extends Activity {
             }
         });
     }
-
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public void pause(View view){
+        myAudioRecorder.pause();
+        start.setEnabled(true);
+        pause.setEnabled(false);
+        timer.cancel();
+    }
+    @TargetApi(Build.VERSION_CODES.N)
     public void start(View view){
+        recordTime();
+        if (isRecording){
+            myAudioRecorder.resume();
+            pause.setEnabled(true);
+        }else {
+            Recording();
+        }
+    }
+    public void Recording() {
+        isRecording = true;
         SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
         Date curDate = new Date(System.currentTimeMillis()) ; // 獲取當前時間
         String str = formatter.format(curDate);
-        MyFileUtils.name = "video_"+str;
+        MyFileUtils.name = "voice_"+str;
         dataBase = VoideUtils.VADataLIST.get(num);
         dataBase.setFilename(MyFileUtils.name);
-        Recording();
-    }
-    public void Recording(){
-        myAudioRecorder.setOutputFile(MyFileUtils.before_path+"/"+ MyFileUtils.name+".mp4");
+        myAudioRecorder.setOutputFile(MyFileUtils.before_path + "/" + MyFileUtils.name + ".mp4");
         try {
             myAudioRecorder.prepare();
             myAudioRecorder.start();
@@ -112,33 +142,64 @@ public class VoiceActivity extends Activity {
             e.printStackTrace();
         }
         start.setEnabled(false);
+        pause.setEnabled(true);
         stop.setEnabled(true);
         Toast.makeText(getApplicationContext(), "Recording started", Toast.LENGTH_LONG).show();
-
     }
-
-    @RequiresApi(api = Build.VERSION_CODES.N)
-    public void pause(View view){
-        try {
-            myAudioRecorder.pause();
-        } catch (IllegalStateException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+    Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            time.setText(String.format("%1$02d:%2$02d:%3$02d", hour, minute,
+                    second));
+            super.handleMessage(msg);
         }
+    };
+    private void recordTime() {
+        TimerTask timerTask = new TimerTask() {
+
+            @Override
+            public void run() {
+                second++;
+                if (second >= 60) {
+                    second = 0;
+                    minute++;
+                    if (minute >= 60) {
+                        minute = 0;
+                        hour++;
+                    }
+                }
+                handler.sendEmptyMessage(1);
+            }
+
+        };
+        timer = new Timer();
+        timer.schedule(timerTask, 1000, 1000);
     }
+
+
 
     public void stop(View view){
+        isRecording = false;
+        timer.cancel();
+        second = 0;
+        minute = 0;
+        hour = 0;
         myAudioRecorder.stop();
         myAudioRecorder.release();
         myAudioRecorder  = null;
         stop.setEnabled(false);
-        play.setEnabled(true);
         Toast.makeText(getApplicationContext(), "Audio recorded successfully",
                 Toast.LENGTH_LONG).show();
 //        File file = new File(MyFileUtils.before_path + "/" + MyFileUtils.name + ".mp4");
 //        Dialog_mes dialog_mes = new Dialog_mes(context,true,file);
 //        dialog_mes.show();
         File file = new File(MyFileUtils.before_path + "/" + dataBase.getFilename()+ ".mp4");
+        if (dataBase.getFile()!=null){
+            dataBase.getFile().delete();
+        }
+        if (dataBase.getOriginal_file()!=null){
+            dataBase.getOriginal_file().delete();
+        }
         dataBase.setOriginal_file(file);
         dataBase.setFile(null);
         VoideUtils.UpDataFromDB(dataBase);
@@ -148,16 +209,16 @@ public class VoiceActivity extends Activity {
         finish();
     }
 
-    public void play(View view) throws IllegalArgumentException,
-            SecurityException, IllegalStateException, IOException{
-
-        MediaPlayer m = new MediaPlayer();
-        m.setDataSource(MyFileUtils.before_path+"/"+ MyFileUtils.name+".mp4");
-        m.prepare();
-        m.start();
-        Toast.makeText(getApplicationContext(), "Playing audio", Toast.LENGTH_LONG).show();
-
-    }
+//    public void play(View view) throws IllegalArgumentException,
+//            SecurityException, IllegalStateException, IOException{
+//
+//        MediaPlayer m = new MediaPlayer();
+//        m.setDataSource(MyFileUtils.before_path+"/"+ MyFileUtils.name+".mp4");
+//        m.prepare();
+//        m.start();
+//        Toast.makeText(getApplicationContext(), "Playing audio", Toast.LENGTH_LONG).show();
+//
+//    }
     class VoiceAdapter extends BaseAdapter{
 
         @Override

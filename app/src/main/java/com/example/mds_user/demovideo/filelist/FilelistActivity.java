@@ -18,9 +18,11 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.VideoView;
 
 
 import com.example.mds_user.demovideo.R;
+import com.example.mds_user.demovideo.VideoViewActivity;
 import com.example.mds_user.demovideo.VoideUtils;
 import com.example.mds_user.demovideo.film.Dialog_mes;
 import com.example.mds_user.demovideo.film.MyFileUtils;
@@ -89,9 +91,13 @@ public class FilelistActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (isbefore) {
-                    Nowdata.name = fileDatas.get(position).name;
-                    startTrimActivity(Uri.fromFile(fileDatas.get(position).file));
-                    Toast.makeText(context, fileDatas.get(position).getPath(), Toast.LENGTH_SHORT).show();
+//                    Nowdata.name = fileDatas.get(position).name;
+//                    startTrimActivity(Uri.fromFile(fileDatas.get(position).file));
+//                    Toast.makeText(context, fileDatas.get(position).getPath(), Toast.LENGTH_SHORT).show();
+//                    VoideUtils.VideoPlay(context,fileDatas.get(position).file);
+                    Intent intent = new Intent(context, VideoViewActivity.class);
+                    intent.putExtra("path",fileDatas.get(position).file.getPath());
+                    startActivity(intent);
                 }else{
 //                    Uri uri = null;
 //                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){

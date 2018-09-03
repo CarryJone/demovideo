@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
+import android.os.Build;
 import android.support.v4.content.FileProvider;
 
 import com.example.mds_user.demovideo.db.DataBaseHelper;
@@ -35,11 +36,20 @@ public class VoideUtils {
     }
     public static void VideoPlay(Context context,File file){
         Uri uri = null;
-        uri = FileProvider.getUriForFile(context, "com.example.mds_user.demovideo.fileProvider",file);
-        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-        intent.setDataAndType(uri, "video/mp4");
-        context.grantUriPermission(context.getPackageName(),uri,Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N){
+//                uri = FileProvider.getUriForFile(context, "com.example.mds_user.demovideo.fileProvider",file);
+//            }else{
+//                uri = Uri.fromFile(file);
+//            }
+//        uri = FileProvider.getUriForFile(context, "com.example.mds_user.demovideo.fileProvider",file);
+//        uri = Uri.parse(file.getPath());
+//        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+//        intent.setDataAndType(uri, "video/mp4");
+//        context.grantUriPermission(context.getPackageName(),uri,Intent.FLAG_GRANT_READ_URI_PERMISSION);
+//        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+//        context.startActivity(intent);
+        Intent intent = new Intent(context, VideoViewActivity.class);
+        intent.putExtra("path",file.getPath());
         context.startActivity(intent);
     }
      synchronized public static void sendDataFromDB(Voide_Audio_DataBase dataBase){

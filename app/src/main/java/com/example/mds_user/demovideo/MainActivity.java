@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -17,7 +18,12 @@ import com.example.mds_user.demovideo.film.FilmActivity;
 import com.example.mds_user.demovideo.gcm.GCMUtility;
 import com.example.mds_user.demovideo.listpage.ListpageActivity;
 import com.example.mds_user.demovideo.video.VideoActivity;
+import com.example.mds_user.demovideo.voice.Voice3Activity;
 import com.example.mds_user.demovideo.voice.VoiceActivity;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -55,7 +61,6 @@ boolean isPermission = false;
 //        int result = MyFileUtils.createDir(path + "/demos/file/tmp/before",0);//創建剪輯前資料夾
 //        int result2 = MyFileUtils.createDir(path + "/demos/file/tmp/after",1);//創建剪輯後資料夾
         setPermission();
-
 
     }
 
@@ -108,33 +113,31 @@ boolean isPermission = false;
             VoideUtils.VADataLIST.add(dataBase);
             cursor.moveToNext();
         }
-
     }
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
-            case R.id.video:
-               Intent intent = new Intent(context, VideoActivity.class);
-                startActivity(intent);
-                return;
-            case R.id.film:
-                Intent intent2 = new Intent(context, FilmActivity.class);
-                startActivity(intent2);
-                return;
-            case R.id.modify:
-                Intent intent3 = new Intent(context, FilelistActivity.class);
-                startActivity(intent3);
-                return;
-            case R.id.voice:
-                Intent intent4 = new Intent(context, VoiceActivity.class);
-                startActivity(intent4);
-                return;
-            case R.id.listpage:
-                Intent intent5 = new Intent(context, ListpageActivity.class);
-                startActivity(intent5);
-                return;
-
+        int i = v.getId();
+        if (i == R.id.video) {
+            Intent intent = new Intent(context, VideoActivity.class);
+            startActivity(intent);
+            return;
+        } else if (i == R.id.film) {
+            Intent intent2 = new Intent(context, FilmActivity.class);
+            startActivity(intent2);
+            return;
+        } else if (i == R.id.modify) {
+            Intent intent3 = new Intent(context, FilelistActivity.class);
+            startActivity(intent3);
+            return;
+        } else if (i == R.id.voice) {
+            Intent intent4 = new Intent(context, Voice3Activity.class);
+            startActivity(intent4);
+            return;
+        } else if (i == R.id.listpage) {
+            Intent intent5 = new Intent(context, ListpageActivity.class);
+            startActivity(intent5);
+            return;
         }
     }
     private void callGCM(){

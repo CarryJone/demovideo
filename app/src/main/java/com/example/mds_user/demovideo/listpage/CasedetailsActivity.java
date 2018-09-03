@@ -28,6 +28,8 @@ import com.example.mds_user.demovideo.film.Dialog_mes;
 import com.example.mds_user.demovideo.film.FilmActivity;
 import com.example.mds_user.demovideo.film.MyFileUtils;
 import com.example.mds_user.demovideo.film.UploadVideoAsyncTask;
+import com.example.mds_user.demovideo.voice.Voice2Activity;
+import com.example.mds_user.demovideo.voice.Voice3Activity;
 import com.example.mds_user.demovideo.voice.VoiceActivity;
 
 import java.io.File;
@@ -80,55 +82,55 @@ public class CasedetailsActivity extends AppCompatActivity implements View.OnCli
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
-            case R.id.edit:
-              if(database.getOriginal_file() !=null){//原檔
-                    startTrimActivity(Uri.fromFile(database.getOriginal_file()));
-                }else{//沒有檔案
-                  if (!aSwitch.isChecked()) {
-                      gotovideo();
-                  }else{
-                      gotovoice();
-                  }
-                }
-                break;
-            case R.id.record:
+        int i = v.getId();
+        if (i == R.id.edit) {
+            if (database.getOriginal_file() != null) {//原檔
+                startTrimActivity(Uri.fromFile(database.getOriginal_file()));
+            } else {//沒有檔案
                 if (!aSwitch.isChecked()) {
                     gotovideo();
-                }else{
+                } else {
                     gotovoice();
                 }
-                break;
-            case R.id.store:
-                store();
-                break;
-            case R.id.upload:
-                final Dialog_mes dialog = new Dialog_mes(context,"是否上傳影片");
-                dialog.setDialog_but(new Dialog_mes.DialogResultCallBack() {
-                    @Override
-                    public void onResult() {
-                        String path = "";
-                        if (database.getFile()!=null) {
-                            path = database.getFile().getPath();
-                        }else if (database.getOriginal_file()!=null){
-                            path = database.getOriginal_file().getPath();
-                        }
-                        updata(path);
-                        dialog.dismiss();
-                    }
-                });
-                dialog.show();
-                break;
-            case R.id.play:
-                if(database.getFile() !=null){//原檔
-                    VoideUtils.VideoPlay(context,database.getFile());
-                }else if(database.getOriginal_file() !=null){//原檔
-                    VoideUtils.VideoPlay(context,database.getOriginal_file());
-                }else{
-                    Toast.makeText(context,"無檔案",Toast.LENGTH_SHORT).show();
-                }
+            }
 
-                break;
+        } else if (i == R.id.record) {
+            if (!aSwitch.isChecked()) {
+                gotovideo();
+            } else {
+                gotovoice();
+            }
+
+        } else if (i == R.id.store) {
+            store();
+
+        } else if (i == R.id.upload) {
+            final Dialog_mes dialog = new Dialog_mes(context, "是否上傳影片");
+            dialog.setDialog_but(new Dialog_mes.DialogResultCallBack() {
+                @Override
+                public void onResult() {
+                    String path = "";
+                    if (database.getFile() != null) {
+                        path = database.getFile().getPath();
+                    } else if (database.getOriginal_file() != null) {
+                        path = database.getOriginal_file().getPath();
+                    }
+                    updata(path);
+                    dialog.dismiss();
+                }
+            });
+            dialog.show();
+
+        } else if (i == R.id.play) {
+            if (database.getFile() != null) {//原檔
+                VoideUtils.VideoPlay(context, database.getFile());
+            } else if (database.getOriginal_file() != null) {//原檔
+                VoideUtils.VideoPlay(context, database.getOriginal_file());
+            } else {
+                Toast.makeText(context, "無檔案", Toast.LENGTH_SHORT).show();
+            }
+
+
         }
     }
 
@@ -154,7 +156,7 @@ public class CasedetailsActivity extends AppCompatActivity implements View.OnCli
         startActivityForResult(intent,101);
     }
     private void gotovoice(){
-        Intent intent = new Intent(context, VoiceActivity.class);
+        Intent intent = new Intent(context, Voice3Activity.class);
         intent.putExtra("num",num);
         startActivityForResult(intent,102);
     }
@@ -216,7 +218,7 @@ public class CasedetailsActivity extends AppCompatActivity implements View.OnCli
             return listView.getChildAt(childIndex);
         }
     }
-    public void updata(String path){
+    synchronized void updata(String path){
         new UploadVideoAsyncTask(context, mHandler,num).execute(path);
         Toast.makeText(context,"影片上傳中",Toast.LENGTH_SHORT).show();
     } public Handler mHandler = new Handler() {

@@ -11,40 +11,41 @@
       android:layout_height="wrap_content"
       android:orientation="horizontal">
     <Button
-        android:id="@+id/button1"
+        android:id="@+id/buttonstart"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:onClick="start"
         android:text="start" />
 
     <Button
-        android:id="@+id/button2"
+        android:id="@+id/buttonstop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="left"
         android:onClick="stop"
         android:text="stop" />
     <Button
-        android:id="@+id/button4"
+        android:id="@+id/buttonpause"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="left"
         android:onClick="pause"
         android:text="pause" />
-    <Button
-        android:id="@+id/button3"
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/button2"
-        android:layout_centerHorizontal="true"
-        android:onClick="play"
-        android:text="play" />
+
   </LinearLayout>
   <ListView
       android:id="@+id/liststr"
       android:layout_width="match_parent"
-      android:layout_height="match_parent"></ListView>
+      android:layout_height="0dp"
+      android:layout_weight="1"></ListView>
+  <TextView
+      android:id="@+id/time"
+      android:text="00:00:00"
+      android:textSize="20dp"
+      android:padding="5dp"
+      android:layout_gravity="center_vertical|center_horizontal"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content" />
 
 
 

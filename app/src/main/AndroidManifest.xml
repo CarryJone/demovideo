@@ -26,6 +26,7 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
+        android:name=".RecorderApplication"
         android:allowBackup="true"
         android:hardwareAccelerated="false"
         android:icon="@mipmap/ic_launcher"
@@ -136,10 +137,24 @@
             android:label="@string/title_activity_voice"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".listpage.ListpageActivity"
-            android:screenOrientation="portrait"/>
-        <activity android:name=".listpage.CasedetailsActivity"
-            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name=".voice.Voice2Activity"
+            android:label="@string/title_activity_voice"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".listpage.ListpageActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".listpage.CasedetailsActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".VideoViewActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".voice.Voice3Activity"></activity>
     </application>
 
 </manifest>
